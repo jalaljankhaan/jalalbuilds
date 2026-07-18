@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getActiveContactPackageLabel } from "./contactPackageService";
 import { createSupabaseServerClient } from "./supabaseClient";
@@ -77,7 +76,8 @@ export async function saveContactMessage(
    * (otherwise we'd need a policy that exposes all leads). We generate `id` on the
    * server and return it to the client.
    */
-  const id = randomUUID();
+  // Web Crypto — preferred on Cloudflare Workers (nodejs_compat not required for UUID)
+  const id = crypto.randomUUID();
   const name = parsed.name.trim();
   const email = parsed.email.toLowerCase();
 

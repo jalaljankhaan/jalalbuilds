@@ -1,14 +1,15 @@
 ## jalalbuilds
 
-Personal branding site for Jalal, built with Next.js 13 (App Router), TypeScript, Tailwind CSS, and Supabase.
+Personal branding site for Jalal, built with Next.js (App Router), TypeScript, Tailwind CSS, and Supabase. Deployed to Cloudflare Workers via OpenNext.
 
 ### Tech stack
 
-- **Framework**: Next.js 13 App Router + TypeScript
+- **Framework**: Next.js App Router + TypeScript (React Compiler)
 - **Styling**: Tailwind CSS with custom brand tokens
 - **Backend-as-a-service**: Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- **Hosting**: Cloudflare Workers (`@opennextjs/cloudflare`, Wrangler)
 - **Tooling**: ESLint, Prettier, Husky, lint-staged
-- **Architecture**: SOLID, modular, feature-oriented folders under `app/*`
+- **Architecture**: App Router UI in `src/app` + services in `lib/services`
 
 ### Folder structure
 
@@ -62,11 +63,40 @@ Leads from the contact form are stored in Supabase (`contact_messages`). Review 
 
 ### Scripts
 
-- **Dev**: `npm run dev`
+- **Dev**: `npm run dev` (Next.js Node server)
+- **Preview**: `npm run preview` (Workers runtime via Wrangler — production-accurate)
+- **Deploy**: `npm run deploy` (build + deploy to Cloudflare Workers)
+- **Upload**: `npm run upload` (build + upload a new Worker version without promoting)
 - **Build**: `npm run build`
-- **Start**: `npm start`
+- **Start**: `npm start` (Node production server; not used for Cloudflare hosting)
 - **Lint**: `npm run lint`
 - **Format**: `npm run format`
+- **CF types**: `npm run cf-typegen`
+
+### Cloudflare Workers (Scenario A)
+
+Hosting uses **OpenNext** (`@opennextjs/cloudflare`) on **Workers**. Supabase remains the database/API backend.
+
+Local `npm run dev` still uses the Next.js Node server. Before shipping, run `npm run preview` so the app is exercised in the `workerd` runtime.
+
+Config files:
+
+- `wrangler.jsonc` — Worker name, `nodejs_compat`, assets, self-reference service, Images, observability
+- `open-next.config.ts` — Static Assets incremental cache (SSG-friendly)
+- `public/_headers` — long-cache immutable `/_next/static/*`
+- `.dev.vars` — local Wrangler secrets (`cp .dev.vars.example .dev.vars`)
+
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in:
+
+- `.env.local` for local Next.js / OpenNext builds
+- Cloudflare dashboard → Workers → Settings → Variables and secrets (and Build variables if using Workers Builds)
+
+Deploy:
+
+```bash
+npx wrangler login
+npm run deploy
+```
 
 ### Git hooks
 

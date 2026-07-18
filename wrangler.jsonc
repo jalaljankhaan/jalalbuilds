@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jalalbuilds",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": [
+    // Enable Node.js APIs used by Next.js / OpenNext
+    "nodejs_compat",
+    // Allow fetch() to public origins from the Worker
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      // Must match this Worker's "name"
+      "service": "jalalbuilds"
+    }
+  ],
+  // Cloudflare Image Resizing for next/image (optional but recommended by OpenNext)
+  "images": {
+    "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

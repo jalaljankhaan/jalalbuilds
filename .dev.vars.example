@@ -1,0 +1,7 @@
+# Copy to .dev.vars for local Wrangler / OpenNext preview
+# NEXTJS_ENV selects which Next.js .env* files to load (defaults to "production")
+NEXTJS_ENV=development
+
+# Optional: mirror production Worker vars here for preview if not using .env.local
+# NEXT_PUBLIC_SUPABASE_URL=
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=

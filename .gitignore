@@ -31,11 +31,20 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (never commit secrets)
-.env*
+.env
+.env*.local
 .env.local
+!.env.example
 
 # vercel
 .vercel
+
+# cloudflare / opennext
+.open-next
+.wrangler
+.dev.vars
+!.dev.vars.example
+cloudflare-env.d.ts
 
 # typescript
 *.tsbuildinfo
