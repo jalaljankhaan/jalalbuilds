@@ -78,7 +78,7 @@ export function Contact() {
           setPackagesError("Could not load packages. Refresh or try again later.");
         } else if (parsed.error === "failed_to_load") {
           setPackagesError(
-            "Could not load packages. Check Supabase env vars and that the contact_packages table exists.",
+            "Could not load packages. Apply D1 migrations (`npm run db:migrate:local`) and retry.",
           );
         } else {
           setPackagesError(null);
@@ -323,9 +323,9 @@ export function Contact() {
                   <p className="mt-1 text-sm text-amber-700" role="status">
                     No packages in the database yet. Run{" "}
                     <code className="rounded bg-amber-100 px-1 text-xs">
-                      scripts/sql/contact_packages.sql
+                      npm run db:migrate:local
                     </code>{" "}
-                    in the Supabase SQL editor.
+                    to seed contact packages.
                   </p>
                 )}
                 {fieldErrors.packageId && (

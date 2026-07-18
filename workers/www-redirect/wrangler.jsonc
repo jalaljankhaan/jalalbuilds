@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "jalalbuilds-www-redirect",
+  "main": "index.js",
+  "compatibility_date": "2026-07-18",
+  "routes": [
+    { "pattern": "www.jnovasystems.com", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

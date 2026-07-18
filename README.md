@@ -1,58 +1,50 @@
 ## jalalbuilds
 
-Personal branding site for Jalal, built with Next.js (App Router), TypeScript, Tailwind CSS, and Supabase. Deployed to Cloudflare Workers via OpenNext.
+Personal branding site for Jalal, built with Next.js (App Router), TypeScript, Tailwind CSS, and Cloudflare D1. Hosted on Cloudflare Workers via OpenNext.
 
 ### Tech stack
 
 - **Framework**: Next.js App Router + TypeScript (React Compiler)
 - **Styling**: Tailwind CSS with custom brand tokens
-- **Backend-as-a-service**: Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- **Database**: Cloudflare D1 (SQLite) via Worker binding `DB`
 - **Hosting**: Cloudflare Workers (`@opennextjs/cloudflare`, Wrangler)
 - **Tooling**: ESLint, Prettier, Husky, lint-staged
-- **Architecture**: App Router UI in `src/app` + services in `lib/services`
+- **Architecture**: App Router UI in `src/app` + services in `lib/services` + D1 helper in `lib/db`
 
 ### Folder structure
 
-- `src/app/` – App Router entrypoints and UI
-  - `src/app/page.tsx` – home page
-  - `src/app/layout.tsx` – root layout (`SiteShell` + `SiteFooter`)
+- `src/app/` – App Router entrypoints, UI, and API route handlers
 - `src/components/` – shared UI (`Navbar`, `SiteFooter`, sections, contact form)
-- `lib/services/` – Supabase clients and domain services
-- `lib/utils/` – utilities (e.g. `env.ts`)
-- `lib/types/` – shared types
+- `lib/services/` – domain services (D1 queries)
+- `lib/db/` – D1 access helper (`getCloudflareContext`)
+- `migrations/` – D1 SQL migrations
 - `public/` – static assets
-- `scripts/` – automation scripts
-- `tests/` – tests
 
-> **Routing note:** Routes are defined by `src/app/**/page.tsx` files (Next.js App Router). The `app/pages` folder is used as a modular space for page-related logic, not for routing.
+### Database (D1)
+
+Schema and seed data live in `migrations/`. Apply before preview/deploy:
+
+```bash
+npm run db:migrate:local    # local Miniflare D1 (for preview / next dev bindings)
+npm run db:migrate:remote   # production D1 on Cloudflare
+```
+
+Tables:
+
+- `contact_messages` — contact form leads (**INSERT-only** from public APIs; never exposed via SELECT routes)
+- `contact_packages` — package options for the contact form (seeded)
+- `projects` / `blog_posts` — portfolio and blog cards (`tags` stored as JSON text)
+- `testimonials` / `newsletter_subscribers` — optional features
+
+**Security:** Only the Worker can access D1. Do not add public API routes that list `contact_messages` or `newsletter_subscribers`.
 
 ### Environment variables
 
-Copy `.env.example` to `.env.local` and fill in real values:
+Optional social URLs (server-only):
 
 ```bash
 cp .env.example .env.local
 ```
-
-Required keys:
-
-- `NEXT_PUBLIC_SUPABASE_URL` – full project URL from Supabase **Settings → API**, e.g. `https://abcdefgh.supabase.co` (must include `https://`). Placeholder text or a non-URL value will fail validation.
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` – **anon public** key from the same page.
-
-Values are trimmed and optional surrounding `"` / `'` quotes are stripped so typical `.env` formatting still works.
-
-Leads from the contact form are stored in Supabase (`contact_messages`). Review them in the Supabase dashboard.
-
-**Contact form:** Run these once in the [Supabase SQL Editor](https://supabase.com/dashboard):
-
-- `scripts/sql/contact_messages.sql` — `contact_messages` table + RLS so anonymous inserts from the API succeed (no public read of messages).
-- `scripts/sql/contact_packages.sql` — `contact_packages` table, RLS for public read of active rows, and seed options for “Select Package”. Edit labels or `sort_order` anytime without redeploying.
-- `scripts/sql/projects_portfolio.sql` — `projects` table (`slug`, `title`, `summary`, optional `description`, optional `url`, `tags` as `text[]`, `featured`, `sort_order`, `created_at`), index on `(featured desc, sort_order asc)`, RLS so **anon can read** rows for the home page grid.
-- `scripts/sql/blog_posts.sql` — `blog_posts` table (same column layout as `projects`), index and RLS for **anon read**, used by the horizontal blog section on the home page.
-
-**Security:** If `.env.local` or any file containing these keys was ever committed or pushed to a remote repository, rotate your Supabase anon key immediately in the [Supabase Dashboard](https://supabase.com/dashboard) (Settings → API).
-
-**Footer social icons (optional):** Set any of these in `.env.local` as full `https://` URLs. They are **server-only** (no `NEXT_PUBLIC_` prefix), so they are not bundled into client JavaScript. Only icons with a valid URL are shown; each opens in a new tab.
 
 - `SOCIAL_LINKEDIN_URL`
 - `SOCIAL_GITHUB_URL`
@@ -61,66 +53,47 @@ Leads from the contact form are stored in Supabase (`contact_messages`). Review 
 - `SOCIAL_INSTAGRAM_URL`
 - `SOCIAL_YOUTUBE_URL`
 
+Database credentials are **not** env vars — D1 is the `DB` binding in `wrangler.jsonc`.
+
 ### Scripts
 
-- **Dev**: `npm run dev` (Next.js Node server)
-- **Preview**: `npm run preview` (Workers runtime via Wrangler — production-accurate)
-- **Deploy**: `npm run deploy` (build + deploy to Cloudflare Workers)
-- **Upload**: `npm run upload` (build + upload a new Worker version without promoting)
-- **Build**: `npm run build`
-- **Start**: `npm start` (Node production server; not used for Cloudflare hosting)
-- **Lint**: `npm run lint`
-- **Format**: `npm run format`
+- **Dev**: `npm run dev` (Next.js Node server; D1 via OpenNext local bindings)
+- **Preview**: `npm run preview` (Workers runtime via Wrangler)
+- **Deploy**: `npm run deploy`
+- **Upload**: `npm run upload`
+- **DB migrate local/remote**: `npm run db:migrate:local` / `npm run db:migrate:remote`
 - **CF types**: `npm run cf-typegen`
+- **Lint / Format**: `npm run lint` / `npm run format`
 
-### Cloudflare Workers (Scenario A)
+### Cloudflare Workers
 
-Hosting uses **OpenNext** (`@opennextjs/cloudflare`) on **Workers**. Supabase remains the database/API backend.
+Config:
 
-Local `npm run dev` still uses the Next.js Node server. Before shipping, run `npm run preview` so the app is exercised in the `workerd` runtime.
+- `wrangler.jsonc` — Worker, D1 `DB`, assets, Images, observability
+- `open-next.config.ts` — Static Assets incremental cache
+- `public/_headers` — immutable `/_next/static/*`
+- `.dev.vars` — `cp .dev.vars.example .dev.vars`
 
-Config files:
+**Live domains**
 
-- `wrangler.jsonc` — Worker name, `nodejs_compat`, assets, self-reference service, Images, observability
-- `open-next.config.ts` — Static Assets incremental cache (SSG-friendly)
-- `public/_headers` — long-cache immutable `/_next/static/*`
-- `.dev.vars` — local Wrangler secrets (`cp .dev.vars.example .dev.vars`)
+- Canonical: https://jnovasystems.com (`jalalbuilds` Worker)
+- https://www.jnovasystems.com → **301** to apex (`jalalbuilds-www-redirect` Worker)
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in:
-
-- `.env.local` for local Next.js / OpenNext builds
-- Cloudflare dashboard → Workers → Settings → Variables and secrets (and Build variables if using Workers Builds)
+Cloudflare manages DNS + SSL for both Custom Domains.
 
 Deploy:
 
 ```bash
-npx wrangler login
+npm run db:migrate:remote
 npm run deploy
 ```
 
-### Git hooks
-
-- **pre-commit**: runs `lint-staged` to apply ESLint + Prettier to staged files.
-
 ### Getting started
 
-1. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Set up env vars:
-
-   ```bash
-   cp .env.example .env.local
-   # then edit .env.local with your actual keys
-   ```
-
-3. Run dev server:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Open `http://localhost:3000` to see the `jalalbuilds` homepage.
+```bash
+npm install
+cp .dev.vars.example .dev.vars
+npm run db:migrate:local
+npm run preview
+# open http://localhost:8787
+```

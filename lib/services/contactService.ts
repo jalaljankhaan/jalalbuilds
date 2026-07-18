@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { getDb } from "@/lib/db/d1";
 import { getActiveContactPackageLabel } from "./contactPackageService";
-import { createSupabaseServerClient } from "./supabaseClient";
 
 /**
- * Data contract for a contact message stored in Supabase.
+ * Data contract for a contact message stored in D1.
  * Keep this in sync with the `contact_messages` table.
  */
 export type ContactMessage = {
@@ -21,7 +21,7 @@ export class InvalidContactPackageError extends Error {
   }
 }
 
-/** Thrown when Supabase rejects the insert (RLS, missing table, schema mismatch). */
+/** Thrown when D1 rejects the insert (constraint / schema mismatch). */
 export class ContactPersistenceError extends Error {
   constructor() {
     super("Failed to persist contact message");
@@ -54,6 +54,10 @@ function composeStoredMessage(
   );
 }
 
+/**
+ * Persists a contact lead.
+ * Intentionally INSERT-only — no SELECT on contact_messages from public APIs.
+ */
 export async function saveContactMessage(
   input: ContactInput,
 ): Promise<SaveContactResult> {
@@ -64,31 +68,32 @@ export async function saveContactMessage(
     throw new InvalidContactPackageError();
   }
 
-  const supabase = createSupabaseServerClient();
   const storedMessage = composeStoredMessage(
     parsed.subject,
     packageLabel,
     parsed.message,
   );
 
-  /**
-   * Insert without `.select()`: with RLS, anon can INSERT but must not SELECT rows
-   * (otherwise we'd need a policy that exposes all leads). We generate `id` on the
-   * server and return it to the client.
-   */
-  // Web Crypto — preferred on Cloudflare Workers (nodejs_compat not required for UUID)
   const id = crypto.randomUUID();
   const name = parsed.name.trim();
   const email = parsed.email.toLowerCase();
+  const created_at = new Date().toISOString();
 
-  const { error } = await supabase.from("contact_messages").insert({
-    id,
-    name,
-    email,
-    message: storedMessage,
-  });
+  try {
+    const db = await getDb();
+    const result = await db
+      .prepare(
+        `INSERT INTO contact_messages (id, name, email, message, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(id, name, email, storedMessage, created_at)
+      .run();
 
-  if (error) {
+    if (!result.success) {
+      throw new ContactPersistenceError();
+    }
+  } catch (error) {
+    if (error instanceof ContactPersistenceError) throw error;
     console.error("contact_messages insert", error);
     throw new ContactPersistenceError();
   }
@@ -99,8 +104,8 @@ export async function saveContactMessage(
       name,
       email,
       message: storedMessage,
-      created_at: new Date().toISOString(),
-    } as ContactMessage,
+      created_at,
+    },
     packageLabel,
   };
 }

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createSupabaseServerClient } from "./supabaseClient";
+import { getDb } from "@/lib/db/d1";
 
 /**
- * Shape of a newsletter subscriber as stored in Supabase.
+ * Shape of a newsletter subscriber as stored in D1.
  */
 export type NewsletterSubscriber = {
   id: string;
@@ -23,29 +23,34 @@ export type NewsletterInput = z.infer<typeof newsletterInputSchema>;
  * - Validates the email format.
  * - Treats duplicate subscriptions as a success to avoid leaking
  *   information about existing subscribers.
+ * - INSERT-only from public callers (no SELECT of the full list).
  */
 export async function subscribeToNewsletter(
   input: NewsletterInput,
 ): Promise<NewsletterSubscriber | null> {
   const parsed = newsletterInputSchema.parse(input);
-  const supabase = createSupabaseServerClient();
+  const email = parsed.email.toLowerCase();
+  const id = crypto.randomUUID();
+  const created_at = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from("newsletter_subscribers")
-    .insert({
-      email: parsed.email.toLowerCase(),
-    })
-    .select("*")
-    .single();
+  try {
+    const db = await getDb();
+    await db
+      .prepare(
+        `INSERT INTO newsletter_subscribers (id, email, created_at)
+         VALUES (?, ?, ?)`,
+      )
+      .bind(id, email, created_at)
+      .run();
 
-  if (error) {
-    // If there's a unique constraint on email, treat a conflict as a no-op.
-    if (typeof (error as { code?: string }).code === "string" && (error as { code?: string }).code === "23505") {
+    return { id, email, created_at };
+  } catch (error) {
+    // SQLite unique constraint → treat as success (no info leak)
+    const message = error instanceof Error ? error.message : String(error);
+    if (/UNIQUE/i.test(message)) {
       return null;
     }
+    console.error("newsletter_subscribers insert", error);
     throw new Error("Failed to subscribe to newsletter.");
   }
-
-  return (data ?? null) as NewsletterSubscriber | null;
 }
-

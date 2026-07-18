@@ -1,6 +1,11 @@
-import { createSupabaseServerClient } from "./supabaseClient";
+import { getDb } from "@/lib/db/d1";
 
 export type ContactPackageOption = {
+  id: string;
+  label: string;
+};
+
+type ContactPackageRow = {
   id: string;
   label: string;
 };
@@ -8,23 +13,17 @@ export type ContactPackageOption = {
 /** Active packages for the contact form, ordered for display. */
 export async function getActiveContactPackages(): Promise<ContactPackageOption[]> {
   try {
-    const supabase = createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("contact_packages")
-      .select("id, label")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
+    const db = await getDb();
+    const { results } = await db
+      .prepare(
+        `SELECT id, label
+         FROM contact_packages
+         WHERE is_active = 1
+         ORDER BY sort_order ASC`,
+      )
+      .all<ContactPackageRow>();
 
-    if (error) {
-      console.error("getActiveContactPackages", error);
-      return [];
-    }
-
-    if (!Array.isArray(data)) {
-      return [];
-    }
-
-    return data as ContactPackageOption[];
+    return results ?? [];
   } catch (e) {
     console.error("getActiveContactPackages unexpected", e);
     return [];
@@ -36,19 +35,18 @@ export async function getActiveContactPackageLabel(
   packageId: string,
 ): Promise<string | null> {
   try {
-    const supabase = createSupabaseServerClient();
-    const { data, error } = await supabase
-      .from("contact_packages")
-      .select("label")
-      .eq("id", packageId)
-      .eq("is_active", true)
-      .maybeSingle();
+    const db = await getDb();
+    const row = await db
+      .prepare(
+        `SELECT label
+         FROM contact_packages
+         WHERE id = ? AND is_active = 1
+         LIMIT 1`,
+      )
+      .bind(packageId)
+      .first<{ label: string }>();
 
-    if (error || !data?.label) {
-      return null;
-    }
-
-    return data.label as string;
+    return row?.label ?? null;
   } catch (e) {
     console.error("getActiveContactPackageLabel unexpected", e);
     return null;

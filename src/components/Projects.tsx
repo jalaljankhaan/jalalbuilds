@@ -102,7 +102,7 @@ export function Projects() {
 
         if (parsed.error === "failed_to_load") {
           setLoadError(
-            "Could not load projects. Run scripts/sql/projects_portfolio.sql in Supabase and check env vars.",
+            "Could not load projects. Apply D1 migrations (`npm run db:migrate:local`) and retry.",
           );
         } else {
           setLoadError(null);

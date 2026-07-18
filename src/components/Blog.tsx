@@ -106,7 +106,7 @@ export function Blog() {
 
         if (parsed.error === "failed_to_load") {
           setLoadError(
-            "Could not load blog posts. Run scripts/sql/blog_posts.sql in Supabase and check env vars.",
+            "Could not load blog posts. Apply D1 migrations (`npm run db:migrate:local`) and retry.",
           );
         } else {
           setLoadError(null);

@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "./supabaseClient";
+import { getDb } from "@/lib/db/d1";
 
 /**
  * Public representation of a testimonial.
@@ -13,25 +13,33 @@ export type Testimonial = {
   order_index: number;
 };
 
+type TestimonialRow = {
+  id: string;
+  name: string;
+  role: string;
+  company: string | null;
+  quote: string;
+  order_index: number;
+};
+
 /**
  * Retrieves client testimonials for display.
- *
- * Design:
- * - Encapsulates ordering and filtering logic so the UI remains simple.
  */
 export async function getTestimonials(): Promise<Testimonial[]> {
-  const supabase = createSupabaseServerClient();
+  try {
+    const db = await getDb();
+    const { results } = await db
+      .prepare(
+        `SELECT id, name, role, company, quote, order_index
+         FROM testimonials
+         WHERE is_visible = 1
+         ORDER BY order_index ASC`,
+      )
+      .all<TestimonialRow>();
 
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select("*")
-    .eq("is_visible", true)
-    .order("order_index", { ascending: true });
-
-  if (error || !data) {
+    return results ?? [];
+  } catch (e) {
+    console.error("getTestimonials unexpected", e);
     throw new Error("Failed to load testimonials.");
   }
-
-  return data as Testimonial[];
 }
-
