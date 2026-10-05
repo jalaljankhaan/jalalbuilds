@@ -35,6 +35,13 @@ export function Contact() {
     "idle",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastSubmitted, setLastSubmitted] = useState<{
+    name: string;
+    email: string;
+    subject: string;
+    packageLabel: string;
+    message: string;
+  } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
     email?: string;
@@ -147,7 +154,32 @@ export function Contact() {
         return;
       }
 
+      const selectedPkg = packages.find((p) => p.id === form.packageId);
+      const packageLabel = selectedPkg ? selectedPkg.label : "Standard";
+
+      const waText = [
+        `*🚀 New Project Inquiry — J Nova Systems*`,
+        ``,
+        `*👤 Name:* ${form.name.trim()}`,
+        `*📧 Email:* ${form.email.trim()}`,
+        `*📋 Subject:* ${form.subject.trim()}`,
+        `*📦 Package:* ${packageLabel}`,
+        ``,
+        `*💬 Message:*`,
+        form.message.trim(),
+      ].join("\n");
+
+      const waUrl = `https://wa.me/447460004748?text=${encodeURIComponent(waText)}`;
+
+      setLastSubmitted({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        subject: form.subject.trim(),
+        packageLabel,
+        message: form.message.trim(),
+      });
       setStatus("success");
+      window.open(waUrl, "_blank");
       setForm(initialForm);
       setFieldErrors({});
     } catch {
@@ -369,12 +401,38 @@ export function Contact() {
             )}
 
             {status === "success" && (
-              <p
-                className="mt-5 border border-[#2b7650] bg-[#d5f7e1] px-4 py-3 text-sm text-[#174c33]"
+              <div
+                className="mt-5 border border-[#2b7650] bg-[#d5f7e1] p-4 text-sm text-[#174c33]"
                 role="status"
               >
-                Message sent. Our product team will review it and get back to you.
-              </p>
+                <p className="font-bold">Message sent successfully!</p>
+                <p className="mt-1">
+                  Your inquiry has been logged and opened in WhatsApp (+44 7460 004748).
+                  If WhatsApp did&apos;t open automatically, click below:
+                </p>
+                {lastSubmitted && (
+                  <a
+                    href={`https://wa.me/447460004748?text=${encodeURIComponent(
+                      [
+                        `*🚀 New Project Inquiry — J Nova Systems*`,
+                        ``,
+                        `*👤 Name:* ${lastSubmitted.name}`,
+                        `*📧 Email:* ${lastSubmitted.email}`,
+                        `*📋 Subject:* ${lastSubmitted.subject}`,
+                        `*📦 Package:* ${lastSubmitted.packageLabel}`,
+                        ``,
+                        `*💬 Message:*`,
+                        lastSubmitted.message,
+                      ].join("\n"),
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block bg-[#06110d] px-4 py-2.5 font-bold text-[#effff5] transition-colors hover:bg-[#173126]"
+                  >
+                    Open in WhatsApp (+44 7460 004748)
+                  </a>
+                )}
+              </div>
             )}
 
             <button
