@@ -1,84 +1,101 @@
 "use client";
-
 import { useState } from "react";
-
-const NAV_ITEMS = [
-  { label: "Home", href: "#home" },
-  { label: "Projects", href: "#projects" },
-  { label: "Blog", href: "#blog" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+const items = [
+  ["Services", "#services"],
+  ["Work", "#projects"],
+  ["Insights", "#insights"],
+  ["Company", "#company"],
 ] as const;
-
 export function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const scrollTo = (href: string) => {
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
-    setMobileOpen(false);
-  };
-
+  const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-lg">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 sm:px-8">
-        {/* Logo */}
-        <button
-          type="button"
-          onClick={() => scrollTo("#home")}
-          className="text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent transition-opacity hover:opacity-80"
+    <header className="sticky top-0 z-50 border-b border-[#29483b] bg-[#06110de8] backdrop-blur-md">
+      <nav
+        className="shell flex h-[72px] items-center justify-between"
+        aria-label="Primary navigation"
+      >
+        <a
+          href="#home"
+          className="focus-ring flex items-center gap-3 rounded-sm"
+          aria-label="J Nova Systems home"
         >
-          Jalal Builds
-        </button>
-
-        {/* Desktop links */}
-        <ul className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-          {NAV_ITEMS.map((item) => (
-            <li key={item.href}>
-              <button
-                type="button"
-                onClick={() => scrollTo(item.href)}
-                className="transition-colors hover:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-sm"
-              >
-                {item.label}
-              </button>
-            </li>
+          <span
+            className="relative grid h-8 w-8 grid-cols-2 gap-1 border border-[#46735d] p-1"
+            aria-hidden
+          >
+            <i className="bg-[#8cfbb0]" />
+            <i className="border border-[#8cfbb0]" />
+            <i className="border border-[#8cfbb0]" />
+            <i className="bg-[#dfff4f]" />
+          </span>
+          <span className="display text-xl uppercase tracking-[.08em]">
+            J Nova Systems
+          </span>
+        </a>
+        <div className="hidden items-center gap-7 md:flex">
+          {items.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              className="focus-ring rounded-sm text-sm text-[#b8d2c2] transition-colors hover:text-[#effff5]"
+            >
+              {label}
+            </a>
           ))}
-        </ul>
-
-        {/* Mobile toggle */}
+          <a
+            href="#contact"
+            style={{ color: "#06110d" }}
+            className="cta-primary focus-ring bg-[#8cfbb0] px-5 py-3 text-sm font-bold transition-colors hover:bg-[#dfff4f]"
+          >
+            Start a project →
+          </a>
+        </div>
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 md:hidden"
-          onClick={() => setMobileOpen((o) => !o)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
+          className="focus-ring grid h-11 w-11 place-items-center border border-[#46735d] md:hidden"
+          aria-expanded={open}
+          aria-label="Toggle navigation"
+          onClick={() => setOpen((v) => !v)}
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {mobileOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="square"
+          >
+            {open ? (
+              <path d="M5 5l14 14M19 5L5 19" />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path d="M4 7h16M4 12h16M4 17h16" />
             )}
           </svg>
         </button>
       </nav>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="border-t border-slate-100 bg-white px-6 pb-4 pt-2 md:hidden">
-          <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <button
-                  type="button"
-                  onClick={() => scrollTo(item.href)}
-                  className="block w-full rounded-lg px-4 py-3 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600"
-                >
-                  {item.label}
-                </button>
-              </li>
+      {open && (
+        <div className="border-t border-[#29483b] bg-[#0a1b14] p-4 md:hidden">
+          <div className="shell grid gap-1">
+            {items.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                onClick={() => setOpen(false)}
+                className="focus-ring px-4 py-3 text-[#d9eee1]"
+              >
+                {label}
+              </a>
             ))}
-          </ul>
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              style={{ color: "#06110d" }}
+              className="cta-primary mt-2 bg-[#8cfbb0] px-4 py-3 font-bold"
+            >
+              Start a project →
+            </a>
+          </div>
         </div>
       )}
     </header>

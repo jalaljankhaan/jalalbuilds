@@ -16,9 +16,9 @@ const initialForm = {
 /** Visual + a11y “required” marker used across the form. */
 function RequiredLabel({ htmlFor, children }: { htmlFor: string; children: ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-700">
+    <label htmlFor={htmlFor} className="block text-sm font-semibold text-[#173126]">
       {children}{" "}
-      <span className="font-semibold text-red-600" aria-hidden>
+      <span className="font-semibold text-[#8b281e]" aria-hidden>
         *
       </span>
       <span className="sr-only"> (required)</span>
@@ -157,42 +157,37 @@ export function Contact() {
   }
 
   const inputRing =
-    "mt-1.5 w-full rounded-xl border bg-white py-3 text-slate-900 outline-none transition-shadow placeholder:text-slate-400 focus:ring-2";
+    "mt-2 w-full border bg-[#f6fff8] py-3.5 text-[#06110d] outline-none transition-colors placeholder:text-[#6e8b79] focus:ring-2";
   const inputPad = "px-4";
   /** Extra 10px on the right so text clears the native dropdown arrow. */
   const selectPad = "pl-4 pr-[calc(1rem+10px)]";
-  const inputOk = `${inputRing} ${inputPad} border-slate-200 focus:border-indigo-300 focus:ring-indigo-400/30`;
-  const inputErr = `${inputRing} ${inputPad} border-red-300 focus:border-red-400 focus:ring-red-400/25`;
-  const selectOk = `${inputRing} ${selectPad} border-slate-200 focus:border-indigo-300 focus:ring-indigo-400/30`;
-  const selectErr = `${inputRing} ${selectPad} border-red-300 focus:border-red-400 focus:ring-red-400/25`;
+  const inputOk = `${inputRing} ${inputPad} border-[#8cb49b] focus:border-[#173126] focus:ring-[#55ed88]/35`;
+  const inputErr = `${inputRing} ${inputPad} border-[#a83a2c] focus:border-[#8b281e] focus:ring-[#a83a2c]/20`;
+  const selectOk = `${inputRing} ${selectPad} border-[#8cb49b] focus:border-[#173126] focus:ring-[#55ed88]/35`;
+  const selectErr = `${inputRing} ${selectPad} border-[#a83a2c] focus:border-[#8b281e] focus:ring-[#a83a2c]/20`;
 
   return (
     <section
       id="contact"
-      className="border-t border-slate-100 bg-slate-50/40 px-6 py-24 sm:py-32"
+      className="border-t border-[#29483b] bg-[#8cfbb0] py-20 text-[#06110d]"
     >
-      <div
-        className="mx-auto max-w-5xl"
-        style={{ animation: "fade-in-up 0.7s ease-out both" }}
-      >
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
-            Let&apos;s Build Your App
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-500 sm:text-lg">
-            Have a project in mind? Let&apos;s discuss how we can bring your mobile app
-            vision to life.
+      <div className="shell grid gap-12 lg:grid-cols-[.7fr_1.3fr]">
+        <div>
+          <h2 className="section-title">Build what moves your business forward.</h2>
+          <p className="mt-7 max-w-md text-base leading-7 text-[#244738] sm:text-lg">
+            Tell us where the product is today, what needs to change, and what a strong
+            next step looks like.
           </p>
         </div>
 
-        <div className="mx-auto mt-14 max-w-2xl">
+        <div>
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 md:p-10"
+            className="border border-[#4f8f69] bg-[#e5f7eb] p-6 sm:p-8 md:p-10"
             noValidate
           >
-            <p className="mb-6 text-sm text-slate-500">
-              <span className="font-semibold text-red-600">*</span> All fields are
+            <p className="mb-6 text-sm text-[#365f4c]">
+              <span className="font-semibold text-[#8b281e]">*</span> All fields are
               required.
             </p>
 
@@ -218,7 +213,7 @@ export function Contact() {
                   placeholder="Your name"
                 />
                 {fieldErrors.name && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-[#8b281e]" role="alert">
                     {fieldErrors.name}
                   </p>
                 )}
@@ -255,7 +250,7 @@ export function Contact() {
                   placeholder="you@company.com"
                 />
                 {fieldErrors.email && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-[#8b281e]" role="alert">
                     {fieldErrors.email}
                   </p>
                 )}
@@ -281,7 +276,7 @@ export function Contact() {
                   placeholder="e.g. Flutter app for iOS & Android"
                 />
                 {fieldErrors.subject && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-[#8b281e]" role="alert">
                     {fieldErrors.subject}
                   </p>
                 )}
@@ -315,21 +310,21 @@ export function Contact() {
                   ))}
                 </select>
                 {packagesError && (
-                  <p className="mt-1 text-sm text-amber-700" role="status">
+                  <p className="mt-1 text-sm text-[#6b4b00]" role="status">
                     {packagesError}
                   </p>
                 )}
                 {!packagesLoading && packages.length === 0 && !packagesError && (
-                  <p className="mt-1 text-sm text-amber-700" role="status">
+                  <p className="mt-1 text-sm text-[#6b4b00]" role="status">
                     No packages in the database yet. Run{" "}
-                    <code className="rounded bg-amber-100 px-1 text-xs">
+                    <code className="bg-[#eef0a4] px-1 text-xs">
                       npm run db:migrate:local
                     </code>{" "}
                     to seed contact packages.
                   </p>
                 )}
                 {fieldErrors.packageId && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-[#8b281e]" role="alert">
                     {fieldErrors.packageId}
                   </p>
                 )}
@@ -353,11 +348,11 @@ export function Contact() {
                       setFieldErrors((fe) => ({ ...fe, message: undefined }));
                   }}
                   className={fieldErrors.message ? inputErr : inputOk}
-                  placeholder="Tell me about your app, timeline, and goals…"
+                  placeholder="Tell us about the product, timeline, and goals…"
                 />
-                <p className="mt-1 text-xs text-slate-400">Minimum 10 characters.</p>
+                <p className="mt-1 text-xs text-[#587563]">Minimum 10 characters.</p>
                 {fieldErrors.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-[#8b281e]" role="alert">
                     {fieldErrors.message}
                   </p>
                 )}
@@ -366,7 +361,7 @@ export function Contact() {
 
             {status === "error" && errorMessage && (
               <p
-                className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                className="mt-5 border border-[#a83a2c] bg-[#fff0eb] px-4 py-3 text-sm text-[#792117]"
                 role="alert"
               >
                 {errorMessage}
@@ -375,10 +370,10 @@ export function Contact() {
 
             {status === "success" && (
               <p
-                className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+                className="mt-5 border border-[#2b7650] bg-[#d5f7e1] px-4 py-3 text-sm text-[#174c33]"
                 role="status"
               >
-                Thanks -- we received your message. We&apos;ll soon contact you back!
+                Message sent. Our product team will review it and get back to you.
               </p>
             )}
 
@@ -387,7 +382,7 @@ export function Contact() {
               disabled={
                 status === "submitting" || packagesLoading || packages.length === 0
               }
-              className="mt-8 w-full rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-7 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="focus-ring mt-8 w-full bg-[#06110d] px-7 py-4 text-sm font-bold text-[#effff5] transition-colors hover:bg-[#173126] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status === "submitting" ? "Sending…" : "Send message"}
             </button>

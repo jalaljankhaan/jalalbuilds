@@ -49,3 +49,25 @@ cloudflare-env.d.ts
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/.idea/.gitignore
+/.impeccable/config.json
+/.impeccable/review/desktop.png
+/.idea/caches/deviceStreaming.xml
+/.superpowers/brainstorm/4518-1791222357/content/homepage-structure.html
+/.impeccable/mocks/j-nova-asymmetric-network.json
+/.impeccable/mocks/j-nova-asymmetric-network.png
+/.idea/jalalbuilds.iml
+/.idea/markdown.xml
+/.idea/misc.xml
+/.impeccable/review/mobile.png
+/.impeccable/review/mobile-390.png
+/.idea/modules.xml
+/.impeccable/review/quality-bar-asymmetric-network.png
+/.superpowers/brainstorm/4406-1791222337/state/server.pid
+/.superpowers/brainstorm/4518-1791222357/state/server.pid
+/.superpowers/brainstorm/4518-1791222357/state/server-stopped
+/.impeccable/surfaces/src-app-page-tsx.md
+/.idea/vcs.xml
+/.superpowers/brainstorm/4518-1791222357/content/visual-style.html
+/.superpowers/brainstorm/4518-1791222357/content/visual-style-round-2.html
+/.superpowers/brainstorm/4518-1791222357/content/waiting-services.html
